@@ -9,6 +9,10 @@ pub struct Player;
 
 #[derive(Default, Component)]
 #[storage(NullStorage)]
+pub struct Goal;
+
+#[derive(Default, Component)]
+#[storage(NullStorage)]
 pub struct Obstacle;
 
 #[derive(Default, Component)]

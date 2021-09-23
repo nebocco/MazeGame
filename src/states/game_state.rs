@@ -13,10 +13,10 @@ use amethyst::{
 
 use crate::{
     components::{
-        basics::{Obstacle, Player, Wall, WallInvisible},
+        basics::{Goal, Obstacle, Player, Wall, WallInvisible},
         grid2d::Grid2D,
     },
-    config::{DEFAULT_MAP_SIZE, DEFAULT_GRID_SIZE},
+    config::{DEFAULT_GRID_SIZE, CELL_SIZE},
 };
 
 fn load_sprite_sheet(world: &mut World) -> Handle<SpriteSheet> {
@@ -43,11 +43,20 @@ fn load_sprite_sheet(world: &mut World) -> Handle<SpriteSheet> {
 
 fn initialize_camera(world: &mut World) {
     let mut transform = Transform::default();
-    transform.set_translation_xyz(DEFAULT_MAP_SIZE * 0.5, DEFAULT_MAP_SIZE * 0.5, 1.);
+    let map_size = (
+        DEFAULT_GRID_SIZE * CELL_SIZE,
+        DEFAULT_GRID_SIZE * CELL_SIZE,
+    );
+
+    let view_size = (
+        map_size.0 + 4. * CELL_SIZE,
+        map_size.1 + 4. * CELL_SIZE,
+    );
+    transform.set_translation_xyz(map_size.0 * 0.5, map_size.1 * 0.5, 10.);
 
     world.create_entity()
         .with(transform)
-        .with(Camera::standard_2d(DEFAULT_MAP_SIZE, DEFAULT_MAP_SIZE))
+        .with(Camera::standard_2d(view_size.0, view_size.1))
         .build();
 }
 
@@ -67,9 +76,12 @@ fn initialize_player(
 }
 
 fn initialize_invisible_walls(world: &mut World) {
-    let grid_size = DEFAULT_GRID_SIZE as i32;
+    let map_size = (
+        DEFAULT_GRID_SIZE as i32,
+        DEFAULT_GRID_SIZE as i32,
+    );
     // top and bottom
-    for x in 0..grid_size {
+    for x in 0..map_size.0 {
         let grid_bottom = Grid2D::new(x, -1);
 
         world.create_entity()
@@ -79,7 +91,7 @@ fn initialize_invisible_walls(world: &mut World) {
             .with(Obstacle)
             .build();
 
-        let grid_top = Grid2D::new(x, grid_size);
+        let grid_top = Grid2D::new(x, map_size.1);
 
         world.create_entity()
             .with(Transform::from(grid_top.clone()))
@@ -89,7 +101,7 @@ fn initialize_invisible_walls(world: &mut World) {
             .build();
     }
 
-    for y in 0..grid_size {
+    for y in 0..map_size.1 {
         let grid_left = Grid2D::new(-1, y);
 
         world.create_entity()
@@ -99,7 +111,7 @@ fn initialize_invisible_walls(world: &mut World) {
             .with(Obstacle)
             .build();
 
-        let grid_right = Grid2D::new(grid_size, y);
+        let grid_right = Grid2D::new(map_size.0, y);
 
         world.create_entity()
             .with(Transform::from(grid_right.clone()))
@@ -110,10 +122,33 @@ fn initialize_invisible_walls(world: &mut World) {
     }
 }
 
+fn initialize_floors(
+    world: &mut World,
+    sprite_sheet_handle: Handle<SpriteSheet>
+) {
+    let sprite_render = SpriteRender::new(sprite_sheet_handle, 15);
+    let map_size = (
+        DEFAULT_GRID_SIZE as i32,
+        DEFAULT_GRID_SIZE as i32,
+    );
+    // top and bottom
+    for x in 0..map_size.0 {
+        for y in 0..map_size.1 {
+            let mut transform: Transform = Grid2D::new(x, y).into();
+            transform.set_translation_z(-10.);
+
+            world.create_entity()
+                .with(sprite_render.clone())
+                .with(transform)
+                .build();
+        }
+    }
+}
+
 fn initialize_walls(world: &mut World,
     sprite_sheet_handle: Handle<SpriteSheet>
 ) {
-    let sprite_render = SpriteRender::new(sprite_sheet_handle, 0);
+    let sprite_render = SpriteRender::new(sprite_sheet_handle, 1);
     let walls = vec![
         (1, 1),
         (3, 5),
@@ -136,6 +171,26 @@ fn initialize_walls(world: &mut World,
     }
 }
 
+
+fn initialize_goal(world: &mut World,
+    sprite_sheet_handle: Handle<SpriteSheet>
+) {
+    let sprite_render = SpriteRender::new(sprite_sheet_handle, 2);
+
+    let map_size = (
+        DEFAULT_GRID_SIZE as i32,
+        DEFAULT_GRID_SIZE as i32,
+    );
+    let grid = Grid2D::new(map_size.0 - 1, map_size.1 - 1);
+
+    world.create_entity()
+        .with(sprite_render.clone())
+        .with(Transform::from(grid.clone()))
+        .with(grid)
+        .with(Goal)
+        .build();
+}
+
 pub struct GameState;
 
 impl SimpleState for GameState {
@@ -148,8 +203,10 @@ impl SimpleState for GameState {
         world.register::<WallInvisible>();
 
         initialize_camera(world);
+        initialize_floors(world, sprite_sheet_handle.clone());
         initialize_player(world, sprite_sheet_handle.clone());
-        initialize_walls(world, sprite_sheet_handle);
+        initialize_walls(world, sprite_sheet_handle.clone());
+        initialize_goal(world, sprite_sheet_handle);
         initialize_invisible_walls(world);
     }
 

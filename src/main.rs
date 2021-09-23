@@ -3,6 +3,7 @@ use amethyst::{
     core::transform::TransformBundle,
     input::{InputBundle, StringBindings},
     renderer::{
+        palette::{Pixel, Srgba},
         plugins::{RenderFlat2D, RenderToWindow},
         types::DefaultBackend,
         RenderingBundle,
@@ -28,13 +29,17 @@ fn main() -> amethyst::Result<()> {
     // let input_bundle = InputBundle::<StringBindings>::new()
     //     .with_bindings_from_file(resources.join("input.ron"))?;
 
+    let color: [f32; 4] = Srgba::new(44. / 255., 38. / 255., 56. / 255., 255. / 255.)
+        .into_linear()
+        .into_raw();
+
     let game_data = GameDataBuilder::new()
         .with_bundle(InputBundle::<StringBindings>::new())?
         .with_bundle(
             RenderingBundle::<DefaultBackend>::new()
                 .with_plugin(
                     RenderToWindow::from_config_path(display_config)?
-                        .with_clear([0.34, 0.36, 0.52, 1.0]),
+                        .with_clear(color),
                 )
                 .with_plugin(RenderUi::default())
                 .with_plugin(RenderFlat2D::default())
