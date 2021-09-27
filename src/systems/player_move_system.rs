@@ -28,6 +28,18 @@ impl<'s> System<'s> for PlayerMoveSystem {
     );
 
     fn run(&mut self, (player, obstacles, mut transforms, mut grid2ds, input): Self::SystemData) {
+        let movement = if input.key_is_down(VirtualKeyCode::Up) {
+            Grid2DDelta::new(0, 1)
+        } else if input.key_is_down(VirtualKeyCode::Down) {
+            Grid2DDelta::new(0, -1)
+        } else if input.key_is_down(VirtualKeyCode::Left) {
+            Grid2DDelta::new(-1, 0)
+        } else if input.key_is_down(VirtualKeyCode::Right) {
+            Grid2DDelta::new(1, 0)
+        } else {
+            self.move_timer = 0;
+            return
+        };
         if self.move_timer > 0 {
             self.move_timer -= 1;
             return;
@@ -36,29 +48,15 @@ impl<'s> System<'s> for PlayerMoveSystem {
             .map(|(_, grid)| grid.clone())
             .collect::<Vec<Grid2D>>();
 
-        for (_, transform, grid2d) in (&player, &mut transforms, &mut grid2ds).join() {
-            let movement = if input.key_is_down(VirtualKeyCode::Up) {
-                Some(Grid2DDelta::new(0, 1))
-            } else if input.key_is_down(VirtualKeyCode::Down) {
-                Some(Grid2DDelta::new(0, -1))
-            } else if input.key_is_down(VirtualKeyCode::Left) {
-                Some(Grid2DDelta::new(-1, 0))
-            } else if input.key_is_down(VirtualKeyCode::Right) {
-                Some(Grid2DDelta::new(1, 0))
-            } else {
-                None
-            };
-            if let Some(delta) = movement {
-                let next_grid = grid2d.clone() + delta;
-                if !obstacles_place.contains(&next_grid) {
-                    *grid2d = next_grid;
-                    transform.set_translation(
-                        *Transform::from(grid2d.clone()).translation()
-                    );
-                }
-
-                self.move_timer += FREEZE_TIME;
-            }
+        let (_, transform, grid2d) = (&player, &mut transforms, &mut grid2ds).join().next().unwrap();
+        let next_grid = grid2d.clone() + movement;
+        if !obstacles_place.contains(&next_grid) {
+            *grid2d = next_grid;
+            transform.set_translation(
+                *Transform::from(grid2d.clone()).translation()
+            );
         }
+
+        self.move_timer += FREEZE_TIME;
     }
 }

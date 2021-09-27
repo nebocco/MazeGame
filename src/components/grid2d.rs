@@ -22,6 +22,16 @@ impl Grid2D {
     pub fn new(x: i32, y: i32) -> Self {
         Self{x, y}
     }
+
+    pub fn to_transform(&self, z: f32) -> Transform {
+        let mut transform = Transform::default();
+        transform.set_translation_xyz(
+            (self.x as f32 + 0.5) * CELL_SIZE,
+            (self.y as f32 + 0.5) * CELL_SIZE,
+            z,
+        );
+        transform
+    }
 }
 
 impl From<Grid2D> for Transform {

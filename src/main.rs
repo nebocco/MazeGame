@@ -12,12 +12,15 @@ use amethyst::{
     utils::application_root_dir,
 };
 
-use crate::systems::PlayerMoveSystem;
+use crate::systems::{
+    WinSystem, PlayerMoveSystem
+};
 
 mod components;
 mod config;
 mod states;
 mod systems;
+mod resources;
 
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(Default::default());
@@ -46,9 +49,10 @@ fn main() -> amethyst::Result<()> {
         )?
         .with_bundle(TransformBundle::new())?
         .with_bundle(UiBundle::<StringBindings>::new())?
-        .with(PlayerMoveSystem::default(), "player_move_system", &["input_system"]);
+        .with(PlayerMoveSystem::default(), "player_move_system", &["input_system"])
+        .with(WinSystem, "win_system", &["input_system", "player_move_system"]);
 
-    let mut game = Application::new(resources, states::GameState, game_data)?;
+    let mut game = Application::new(resources, states::PlayState, game_data)?;
     game.run();
 
     Ok(())
