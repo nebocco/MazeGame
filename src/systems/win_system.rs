@@ -5,7 +5,7 @@ use amethyst::{
 
 use crate::{
     components::{
-        basics::{Player, Goal},
+        basics::{Baggage, Goal},
         grid2d::{Grid2D},
     },
     resources::{CurrentStageData, GameState},
@@ -16,18 +16,29 @@ pub struct WinSystem;
 
 impl<'s> System<'s> for WinSystem {
     type SystemData = (
-        ReadStorage<'s, Player>,
+        ReadStorage<'s, Baggage>,
         ReadStorage<'s, Goal>,
         ReadStorage<'s, Grid2D>,
         WriteExpect<'s, CurrentStageData>
     );
 
-    fn run(&mut self, (player, goal, grid2ds, mut stage_data): Self::SystemData) {
+    fn run(&mut self, (baggages, goals, grid2ds, mut stage_data): Self::SystemData) {
+        if stage_data.state != GameState::Play {
+            return;
+        }
 
-        let (_, player_position) = (&player, &grid2ds).join().next().unwrap();
-        let (_, goal_position) = (&goal, &grid2ds).join().next().unwrap();
+        let mut baggages_position: Vec<(i32, i32)> = (&baggages, &grid2ds).join()
+            .map(|(_, grid)| (grid.x, grid.y))
+            .collect();
 
-        if player_position == goal_position {
+        let mut goals_position: Vec<(i32, i32)> = (&goals, &grid2ds).join()
+            .map(|(_, grid)| (grid.x, grid.y))
+            .collect();
+        
+        baggages_position.sort();
+        goals_position.sort();
+
+        if baggages_position == goals_position {
             stage_data.state = GameState::Win;
         }
     }

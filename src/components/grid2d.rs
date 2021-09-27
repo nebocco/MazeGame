@@ -11,11 +11,11 @@ use crate::config::CELL_SIZE;
 /// ```
 /// assert_eq!(std::mem::size_of::<Grid2D>(), 8);
 /// ```
-#[derive(Clone, Debug, Default, PartialEq, Component)]
+#[derive(Clone, Debug, Default, Hash, PartialEq, Eq, Component)]
 #[storage(VecStorage)]
 pub struct Grid2D {
-    x: i32,
-    y: i32,
+    pub x: i32,
+    pub y: i32,
 }
 
 impl Grid2D {

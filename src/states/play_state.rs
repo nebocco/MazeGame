@@ -13,7 +13,7 @@ use amethyst::{
 
 use crate::{
     components::{
-        basics::{Goal, Obstacle, Player, Wall, WallInvisible},
+        basics::{Goal, Obstacle, Baggage, Movable, Player, Wall, WallInvisible},
         grid2d::Grid2D,
     },
     resources::{CurrentStageData, GameState},
@@ -73,6 +73,23 @@ fn create_player(
         .with(grid.to_transform(2.))
         .with(grid)
         .with(Player)
+        .build();
+}
+
+fn create_baggage(
+    world: &mut World,
+    (y, x): (i32, i32),
+    sprite_sheet_handle: Handle<SpriteSheet>
+) {
+    let sprite_render = SpriteRender::new(sprite_sheet_handle, 3);
+    let grid = Grid2D::new(x, y);
+
+    world.create_entity()
+        .with(sprite_render)
+        .with(grid.to_transform(2.))
+        .with(grid)
+        .with(Baggage)
+        .with(Movable)
         .build();
 }
 
@@ -175,7 +192,7 @@ fn load_map(world: &mut World) -> Vec<Vec<char>> {
     let stage = current_stage_data.stage;
 
     let map = std::fs::read_to_string(format!("./resources/stages/{:02}.txt", stage))
-        .unwrap_or("@............\n.###.#.#.##..\n.#...#.#.#.#.\n.###.#.#.#.#.\n.#...#.#.#.#.\n.###.###.##..\n............G".to_string())
+        .unwrap_or("@............\n.BBB.B.B.BB..\n.B...B.B.B.B.\n.BBB.B.B.B.B.\n.B...B.B.B.B.\n.BBB.BBB.BB..\n.............".to_string())
         .trim()
         .lines()
         .map(|s| s.chars().collect())
@@ -201,6 +218,7 @@ fn prepare_stage(
                 '#' => create_wall(world, (i, j), sprite_sheet_handle.clone()),
                 '@' => create_player(world, (i, j), sprite_sheet_handle.clone()),
                 'G' => create_goal(world, (i, j), sprite_sheet_handle.clone()),
+                'B' => create_baggage(world, (i, j), sprite_sheet_handle.clone()),
                 '.' => (),
                 _ => unreachable!(),
             };
@@ -217,6 +235,7 @@ impl SimpleState for PlayState {
         
         world.delete_all();
 
+        world.register::<Baggage>();
         world.register::<Wall>();
         world.register::<WallInvisible>();
         

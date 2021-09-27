@@ -22,3 +22,11 @@ pub struct Wall;
 #[derive(Default, Component)]
 #[storage(NullStorage)]
 pub struct WallInvisible;
+
+#[derive(Default, Component)]
+#[storage(NullStorage)]
+pub struct Baggage;
+
+#[derive(Default, Component)]
+#[storage(NullStorage)]
+pub struct Movable;
