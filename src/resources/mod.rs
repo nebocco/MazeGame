@@ -13,7 +13,7 @@ impl Default for CurrentStageData {
     fn default() -> Self {
         Self {
             state: GameState::Play,
-            stage: 0
+            stage: 1
         }
     }
 }

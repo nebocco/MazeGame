@@ -22,7 +22,7 @@ use crate::{
 };
 
 fn reset_resources(world: &mut World) {
-    world.entry::<CurrentStageData>().or_insert(CurrentStageData::default()).next_stage();
+    world.entry::<CurrentStageData>().or_insert(CurrentStageData::default());
 }
 
 fn load_sprite_sheet(world: &mut World) -> Handle<SpriteSheet> {
@@ -233,12 +233,11 @@ impl SimpleState for PlayState {
         let world = data.world;
         reset_resources(world);
         
-        world.delete_all();
-
         world.register::<Baggage>();
         world.register::<Wall>();
         world.register::<WallInvisible>();
         
+        world.delete_all();
         let sprite_sheet_handle = load_sprite_sheet(world);
         prepare_stage(world, sprite_sheet_handle);
     }
@@ -254,12 +253,18 @@ impl SimpleState for PlayState {
 
     fn handle_event(
         &mut self,
-        _data: StateData<'_, GameData<'_, '_>>,
+        data: StateData<'_, GameData<'_, '_>>,
         event: StateEvent
     ) -> SimpleTrans {
         if let StateEvent::Window(ref event) = event {
             if is_close_requested(event) || is_key_down(event, VirtualKeyCode::Escape) {
                 return Trans::Quit
+            } else if is_key_down(event, VirtualKeyCode::R) {
+                println!("Reset stage");
+                let world = data.world;
+                world.delete_all();
+                let sprite_sheet_handle = load_sprite_sheet(world);
+                prepare_stage(world, sprite_sheet_handle);
             }
         }
         Trans::None
