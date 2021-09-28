@@ -14,6 +14,7 @@ use amethyst::{
 use crate::{
     config::{DEFAULT_GRID_SIZE, CELL_SIZE},
     states::PlayState,
+    resources::CurrentStageData,
 };
 
 pub struct ClearState;
@@ -90,9 +91,10 @@ impl SimpleState for ClearState {
 
     }
 
-    fn handle_event(&mut self, _data: StateData<'_, GameData<'_, '_>>, event: StateEvent) -> SimpleTrans {
+    fn handle_event(&mut self, data: StateData<'_, GameData<'_, '_>>, event: StateEvent) -> SimpleTrans {
         if let StateEvent::Window(ref event) = event {
             if is_key_down(event, VirtualKeyCode::Return) {
+                data.world.try_fetch_mut::<CurrentStageData>().unwrap().next_stage();
                 return Trans::Switch(Box::new(PlayState));
             }
         }
