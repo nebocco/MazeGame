@@ -35,6 +35,10 @@ impl<'s> System<'s> for WinSystem {
             .map(|(_, grid)| (grid.x, grid.y))
             .collect();
         
+        if baggages_position.is_empty() || goals_position.is_empty() {
+            return;
+        }
+        
         baggages_position.sort();
         goals_position.sort();
 

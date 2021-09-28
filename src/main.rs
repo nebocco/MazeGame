@@ -52,7 +52,7 @@ fn main() -> amethyst::Result<()> {
         .with(PlayerMoveSystem::default(), "player_move_system", &["input_system"])
         .with(WinSystem, "win_system", &["input_system", "player_move_system"]);
 
-    let mut game = Application::new(resources, states::PlayState, game_data)?;
+    let mut game = Application::new(resources, states::LoadState, game_data)?;
     game.run();
 
     Ok(())

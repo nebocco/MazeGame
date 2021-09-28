@@ -21,10 +21,6 @@ use crate::{
     states::ClearState,
 };
 
-fn reset_resources(world: &mut World) {
-    world.entry::<CurrentStageData>().or_insert(CurrentStageData::default());
-}
-
 fn load_sprite_sheet(world: &mut World) -> Handle<SpriteSheet> {
     let loader = world.read_resource::<Loader>();
 
@@ -231,12 +227,7 @@ pub struct PlayState;
 impl SimpleState for PlayState {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
-        reset_resources(world);
-        
-        world.register::<Baggage>();
-        world.register::<Wall>();
-        world.register::<WallInvisible>();
-        
+      
         world.delete_all();
         let sprite_sheet_handle = load_sprite_sheet(world);
         prepare_stage(world, sprite_sheet_handle);
